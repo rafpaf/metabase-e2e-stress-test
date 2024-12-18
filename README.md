@@ -1,4 +1,4 @@
-This is a script to be used at Metabase for stress-testing e2e tests in CI.
+This is a script for stress-testing e2e tests in CI at Metabase.
 
 To run:
 
