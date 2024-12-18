@@ -6,7 +6,7 @@ export const getLinesAddedAndRemoved = async () => {
     const linesAddedToNewFile: number[] = [];
     const linesRemovedFromOldFile: number[] = [];
     // Retrieve the full diff
-    const diffOutput = await git.diff(["master"]);
+    const diffOutput = await git.diff(["master", "--unified=0"]);
 
     // Split into epochs by files
     const fileDiffs = diffOutput.split(/^diff --git/).slice(1);
@@ -17,7 +17,7 @@ export const getLinesAddedAndRemoved = async () => {
       if (!matchFile) continue;
 
       const fileName = matchFile[2];
-      console.log(`File: ${fileName}`);
+      // console.log(`File: ${fileName}`);
 
       const lines = fileDiff.split("\n");
       let currentLineOld = 0;

@@ -1,4 +1,15 @@
 {
-  "module": "ESNext",
-  "esModuleInterop": true
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "strict": true
+  },
+  "exclude": ["node_modules", "dist"]
 }

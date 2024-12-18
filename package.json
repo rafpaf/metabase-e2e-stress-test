@@ -11,6 +11,8 @@
   "dependencies": {
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-rest-endpoint-methods": "^13.2.6",
-    "simple-git": "^3.27.0"
+    "@types/node": "^22.10.2",
+    "simple-git": "^3.27.0",
+    "typescript": "^5.7.2"
   }
 }
