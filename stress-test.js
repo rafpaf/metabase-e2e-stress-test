@@ -4,11 +4,6 @@ import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 
 import { exec } from "child_process";
 
-// TODO: combine with this fzf command. in place of enter:execute etc pass the filename and test name to this script
-// find e2e -type f -name "*cy.spec*" | while read -r file; do                                                                              ─╯
-//   grep -Hn "\<it(" "$file"
-// done | fzf --height 40% --border --ansi --bind "enter:execute(echo {} > /dev/tty)"
-
 const getGitBranchName = async () => {
   return new Promise((resolve, reject) => {
     exec("git rev-parse --abbrev-ref HEAD", (error, stdout, stderr) => {
@@ -38,10 +33,10 @@ if (!spec) {
   process.exit(1);
 }
 
-const getFlagValue = flag => {
+const getFlagValue = (flag) => {
   const args = process.argv.slice(2);
   const flagIndex = args.findIndex(
-    arg => arg === `--${flag}` || arg.startsWith(`--${flag}=`),
+    (arg) => arg === `--${flag}` || arg.startsWith(`--${flag}=`),
   );
   if (flagIndex === -1) return null;
 
@@ -67,8 +62,13 @@ const getFlagValue = flag => {
   };
   await github.rest.actions.createWorkflowDispatch(params);
   console.log("Workflow dispatched with params:", params);
+  console.log();
+  console.log(
+    "Visit https://github.com/metabase/metabase/actions/workflows/e2e-stress-test-flake-fix.yml",
+  );
 })();
 
-console.log(
-  "Visit https://github.com/metabase/metabase/actions/workflows/e2e-stress-test-flake-fix.yml",
-);
+// TODO: combine with this fzf command. In place of enter:execute etc, pass the filename and test name to this script:
+// find e2e -type f -name "*cy.spec*" | while read -r file; do                                                                              ─╯
+//   grep -Hn "\<it(" "$file"
+// done | fzf --height 40% --border --ansi --bind "enter:execute(echo {} > /dev/tty)"
