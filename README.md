@@ -12,4 +12,6 @@ For example:
 stress-test.js e2e/test/scenarios/permissions/view-data.cy.spec.js "should allow saving 'blocked' and disable create queries dropdown when set"
 ```
 
-By default it will use the currently checked-out Git branch, but you can also specify a branch by appending `--branch=$branchName`.
+By default it will use the currently checked-out Git branch, but you can also specify a branch by appending `--branch $branchName`.
+
+It will run matching tests 20 times by default. You can also specify `--burn $integer` to run the tests that many times.
