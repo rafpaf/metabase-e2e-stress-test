@@ -2,11 +2,11 @@
   "name": "stress-test",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "Stress-test an e2e test in Metabase CI",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Nemanja Glumac (@nemanjaglumac) and Raphael Krut-Landau (@rafpaf)",
   "license": "ISC",
   "dependencies": {
     "@octokit/core": "^6.1.2",
