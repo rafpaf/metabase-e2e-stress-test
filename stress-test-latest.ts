@@ -80,17 +80,6 @@ changedSpecs.forEach(async (specName) => {
   });
 
   changedTests.forEach((testName) => {
-    console.log(specName, `"${testName}"`);
+    console.log(specName, '"' + `${testName}` + '"');
   });
-
-  // github.rest.actions.createWorkflowDispatch({
-  //   ...config,
-  //   workflow_id: "e2e-stress-test-flake-fix.yml",
-  //   ref: await getGitBranchName(),
-  //   inputs: {
-  //     spec: filename,
-  //     burn_in: "20",
-  //     grep: "should mute items in legend", // optional grep filter
-  //   },
-  // });
 });
