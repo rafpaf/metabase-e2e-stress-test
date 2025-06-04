@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Octokit } from "@octokit/core";
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
+import dayjs from "dayjs";
 
 import { exec } from "child_process";
 
@@ -61,11 +62,65 @@ const getFlagValue = (flag) => {
     },
   };
   await github.rest.actions.createWorkflowDispatch(params);
-  console.log("Workflow dispatched with params:", params);
-  console.log();
-  console.log(
-    "Visit https://github.com/metabase/metabase/actions/workflows/e2e-stress-test-flake-fix.yml",
-  );
+  const response = await github.rest.actions.listWorkflowRunsForRepo(config);
+  const jobIdsToWatch = [];
+  let runId = null;
+  for (const run of response.data.workflow_runs.filter(
+    (run) => run.status === "in_progress",
+  )) {
+    // console.log(`In progress: run ${run.id} ${run.html_url}`);
+    runId = run.id;
+    const response = await github.rest.actions.listJobsForWorkflowRun({
+      ...config,
+      run_id: run.id,
+    });
+    const stressTestSteps = response.data.jobs.flatMap((job) => {
+      const steps = job.steps.filter((step) =>
+        step.name.startsWith("Stress-test"),
+      );
+      if (steps.length) {
+        jobIdsToWatch.push(job.id);
+      }
+      return steps;
+    });
+    // useful: downloadJobLogsForWorkflowRun;
+  }
+  while (true) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const messages = [];
+    for (const jobId of jobIdsToWatch) {
+      const response = await github.rest.actions.getJobForWorkflowRun({
+        ...config,
+        job_id: jobId,
+      });
+      const job = response.data;
+      const steps = job.steps.filter((step) =>
+        step.name.startsWith("Stress-test"),
+      );
+      steps.forEach((step) => {
+        const startedAt = dayjs(step.started_at);
+        const secondsElapsed = dayjs().diff(startedAt, "second");
+        const duration = isNaN(secondsElapsed)
+          ? ""
+          : ` running for ${secondsElapsed}s`;
+        messages.push(`${step.name}${duration}`);
+        if (step.conclusion === "failure") {
+          messages.push(`Failed: ${job.html_url}`);
+        }
+        if (step.conclusion === "success") {
+          messages.push(`Success: ${job.html_url}`);
+        }
+      });
+    }
+    console.clear();
+    console.log(messages.join("\n"));
+  }
+
+  // console.log("Workflow dispatched with params:", params);
+  // console.log();
+  // console.log(
+  //   "Visit https://github.com/metabase/metabase/actions/workflows/e2e-stress-test-flake-fix.yml",
+  // );
 })();
 
 // TODO: combine with this fzf command. In place of enter:execute etc, pass the filename and test name to this script:

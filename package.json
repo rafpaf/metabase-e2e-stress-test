@@ -16,6 +16,7 @@
     "@types/babel__generator": "^7.6.8",
     "@types/node": "^22.10.2",
     "crypto": "^1.0.1",
+    "dayjs": "^1.11.13",
     "glob": "^11.0.0",
     "simple-git": "^3.27.0",
     "typescript": "^5.7.2"
