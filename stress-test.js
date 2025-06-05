@@ -2,8 +2,11 @@
 import { Octokit } from "@octokit/core";
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import dayjs from "dayjs";
-
-import { exec } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import { exec, spawn } from "child_process";
+import util from "util";
+const execPromise = util.promisify(exec);
 
 const getGitBranchName = async () => {
   return new Promise((resolve, reject) => {
@@ -27,18 +30,7 @@ const config = {
   repo: "metabase",
 };
 
-const [_, __, spec, testNameRegex] = process.argv;
-
-if (!spec) {
-  console.error("Error: spec parameter is required");
-  process.exit(1);
-}
-if (spec.startsWith("--")) {
-  console.error("Error: spec parameter is required");
-}
-if (testNameRegex.startsWith("--")) {
-  console.error("Error: testNameRegex parameter is required");
-}
+let [_, __, spec, testNameRegex] = process.argv;
 
 const getFlagValue = (flag) => {
   const args = process.argv.slice(2);
@@ -54,7 +46,61 @@ const getFlagValue = (flag) => {
   return args[flagIndex + 1];
 };
 
+// Get the current file's path
+const __filename = fileURLToPath(import.meta.url);
+// Get the directory of the current module
+const __dirname = dirname(__filename);
+
 (async () => {
+  if (!spec || spec.startsWith("--")) {
+    // const { stdout, stderr } = await execPromise(
+    //   __dirname + "/../filter-tests.sh",
+    // );
+
+    const script = spawn(__dirname + "/../filter-tests.sh", [], {
+      stdio: [process.stdin, "pipe", process.stderr], // Ensure interactive I/O handling
+    });
+
+    let scriptOutput = "";
+
+    script.stdout.on("data", (data) => {
+      scriptOutput += data;
+    });
+
+    script.on("error", (err) => {
+      console.error("Failed to start script:", err);
+    });
+
+    script.on("close", (code) => {
+      if (code === 0) {
+        console.log(`Script completed successfully. Output:\n${scriptOutput}`);
+      } else {
+        console.error(`Script failed with code ${code}`);
+      }
+    });
+    process.exit(1);
+
+    const selected = stdout.trim();
+    console.log("@mbj44xrk", "selected", selected);
+
+    spec = selected.split(">")[0].trim();
+    console.log("@mbj2s41s", "spec", spec);
+
+    if (!spec) {
+      console.error("No spec file selected");
+      process.exit(1);
+    }
+    const testLine = selected.split(">")[1]?.trim() || "";
+    console.log("@mbj3xbug", "testLine", testLine);
+
+    // testNameRegex = testLine.match(/it\("([^"]*)/)[1];
+  }
+  console.log("@mbj3tii0", "spec", spec);
+
+  console.log("@mbj3tdvc", "testNameRegex", testNameRegex);
+
+  process.exit(1);
+
   const branch = getFlagValue("branch") || (await getGitBranchName());
   const burnCount = getFlagValue("burn") || "20";
   const mbEdition = getFlagValue("mb_edition") || "ee";
@@ -114,6 +160,7 @@ const getFlagValue = (flag) => {
     });
     // useful: downloadJobLogsForWorkflowRun;
   }
+  console.log("Watching stress test jobs for run:", runId);
   while (true) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const messages = [];
@@ -151,8 +198,3 @@ const getFlagValue = (flag) => {
   //   "Visit https://github.com/metabase/metabase/actions/workflows/e2e-stress-test-flake-fix.yml",
   // );
 })();
-
-// TODO: combine with this fzf command. In place of enter:execute etc, pass the filename and test name to this script:
-// find e2e -type f -name "*cy.spec*" | while read -r file; do                                                                              ─╯
-//   grep -Hn "\<it(" "$file"
-// done | fzf --height 40% --border --ansi --bind "enter:execute(echo {} > /dev/tty)"
