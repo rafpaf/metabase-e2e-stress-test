@@ -33,6 +33,12 @@ if (!spec) {
   console.error("Error: spec parameter is required");
   process.exit(1);
 }
+if (spec.startsWith("--")) {
+  console.error("Error: spec parameter is required");
+}
+if (testNameRegex.startsWith("--")) {
+  console.error("Error: testNameRegex parameter is required");
+}
 
 const getFlagValue = (flag) => {
   const args = process.argv.slice(2);
@@ -51,6 +57,26 @@ const getFlagValue = (flag) => {
 (async () => {
   const branch = getFlagValue("branch") || (await getGitBranchName());
   const burnCount = getFlagValue("burn") || "20";
+  const mbEdition = getFlagValue("mb_edition") || "ee";
+  const qaDB = getFlagValue("qa_db") || "none";
+  const enableNetworkThrottlingString =
+    getFlagValue("enable_network_throttling") || "true";
+
+  // Validation
+  if (!["ee", "oss"].includes(mbEdition)) {
+    console.error('mb_edition must be "ee" or "oss"');
+    process.exit(1);
+  }
+  if (!["none", "sql", "mongo"].includes(qaDB)) {
+    console.error('qaDB must be "none", "sql", or "mongo"');
+    process.exit(1);
+  }
+  if (!["true", "false"].includes(enableNetworkThrottlingString)) {
+    console.error('enable_network_throttling must be "true" or "false"');
+    process.exit(1);
+  }
+  const enableNetworkThrottling = enableNetworkThrottlingString === "true";
+
   const params = {
     ...config,
     workflow_id: "e2e-stress-test-flake-fix.yml",
@@ -58,7 +84,10 @@ const getFlagValue = (flag) => {
     inputs: {
       spec,
       burn_in: burnCount,
-      grep: testNameRegex, // optional grep filter
+      grep: testNameRegex,
+      mb_edition: mbEdition,
+      qa_db: qaDB,
+      enable_network_throttling: enableNetworkThrottling,
     },
   };
   await github.rest.actions.createWorkflowDispatch(params);
