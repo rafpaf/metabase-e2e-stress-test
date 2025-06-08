@@ -4,7 +4,7 @@ import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import dayjs from "dayjs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { exec, spawn } from "child_process";
+import { exec } from "child_process";
 import util from "util";
 const execPromise = util.promisify(exec);
 
@@ -52,54 +52,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 (async () => {
+  let test = null;
   if (!spec || spec.startsWith("--")) {
-    // const { stdout, stderr } = await execPromise(
-    //   __dirname + "/../filter-tests.sh",
-    // );
-
-    const script = spawn(__dirname + "/../filter-tests.sh", [], {
-      stdio: [process.stdin, "pipe", process.stderr], // Ensure interactive I/O handling
-    });
-
-    let scriptOutput = "";
-
-    script.stdout.on("data", (data) => {
-      scriptOutput += data;
-    });
-
-    script.on("error", (err) => {
-      console.error("Failed to start script:", err);
-    });
-
-    script.on("close", (code) => {
-      if (code === 0) {
-        console.log(`Script completed successfully. Output:\n${scriptOutput}`);
-      } else {
-        console.error(`Script failed with code ${code}`);
-      }
-    });
-    process.exit(1);
+    const { stdout, stderr } = await execPromise(
+      __dirname + "/../filter-tests.sh",
+    );
 
     const selected = stdout.trim();
-    console.log("@mbj44xrk", "selected", selected);
 
-    spec = selected.split(">")[0].trim();
-    console.log("@mbj2s41s", "spec", spec);
+    spec = selected.split(">")[0].trim().replace(
+      // remove line number
+      /:.*/,
+      "",
+    );
 
     if (!spec) {
       console.error("No spec file selected");
       process.exit(1);
     }
-    const testLine = selected.split(">")[1]?.trim() || "";
-    console.log("@mbj3xbug", "testLine", testLine);
-
-    // testNameRegex = testLine.match(/it\("([^"]*)/)[1];
+    test = selected.split(">")[1]?.trim() || "";
+    if (test === "All tests") {
+      test = null;
+    }
   }
-  console.log("@mbj3tii0", "spec", spec);
-
-  console.log("@mbj3tdvc", "testNameRegex", testNameRegex);
-
-  process.exit(1);
 
   const branch = getFlagValue("branch") || (await getGitBranchName());
   const burnCount = getFlagValue("burn") || "20";
@@ -130,12 +105,13 @@ const __dirname = dirname(__filename);
     inputs: {
       spec,
       burn_in: burnCount,
-      grep: testNameRegex,
+      grep: test,
       mb_edition: mbEdition,
       qa_db: qaDB,
       enable_network_throttling: enableNetworkThrottling,
     },
   };
+
   await github.rest.actions.createWorkflowDispatch(params);
   const response = await github.rest.actions.listWorkflowRunsForRepo(config);
   const jobIdsToWatch = [];
