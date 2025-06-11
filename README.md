@@ -1,6 +1,6 @@
 Stress-test e2e tests in CI at Metabase.
 
-Just compile with `tsc` and run `dist/stress-test.js`.
+Compile with `tsc`. Alias `stress` to `$path_to_this_repo/dist/stress-test.js`. Run `stress` in the metabase repo.
 
 ![Kapture 2025-06-11 at 10 07 52](https://github.com/user-attachments/assets/4ca634e9-8ef3-48af-a2ba-ff6e18d56686)
 
