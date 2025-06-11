@@ -2,7 +2,7 @@ Stress-test e2e tests in CI at Metabase.
 
 ![Kapture 2025-06-11 at 10 07 52](https://github.com/user-attachments/assets/4ca634e9-8ef3-48af-a2ba-ff6e18d56686)
 
-# Installation
+## Installation
 
 1. Compile with `tsc`.
 2. Make sure you have [`fzf`](https://github.com/junegunn/fzf) installed.
