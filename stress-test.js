@@ -55,7 +55,7 @@ const __dirname = dirname(__filename);
   let test = null;
   if (!spec || spec.startsWith("--")) {
     const { stdout, stderr } = await execPromise(
-      __dirname + "/../filter-tests.sh",
+      `node ${__dirname}/filter-tests.js | fzf --height 40% --border --ansi --prompt="Select an e2e test: "`,
     );
 
     const selected = stdout.trim();
